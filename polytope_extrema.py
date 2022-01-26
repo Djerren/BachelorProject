@@ -1,6 +1,22 @@
+# Polytope_extrema.py can find the vertices (extrema) of the non-signalling polytope corresponding to
+# a number of players and their question and answer sets. To do this, it makes use of the library pycddlib,
+# which works by adding constraints to a matrix. One constraint is one line of a matrix [b  -A] and represents
+# A_ix <= b_i. If we mention linear=True when adding a constraint, the constraint will be added as an equality.
+#
+# Currently there are functions to do this for two and three players, where their question and answer sets are
+# all binary.
+
 import cdd
 
 def three_players():
+    """
+    This function finds the vertices of the extreme points of the no-signalling polytope for three players each
+    with binary input and output. It writes the results to a file. This function is very similar to the function in
+    no-signalling.py, most importantly: we see each variable as a bitstring of length 6 and reference them by the
+    integer value of that bitstring.
+    """
+
+
     positivity = []
     for i in range(2**6):
         rule = [0] * (2**6 + 1)
