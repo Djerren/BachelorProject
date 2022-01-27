@@ -8,8 +8,8 @@ def two_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
     for i in range(2**3):
         variables.append(LpVariable(name='{0:03b}'.format(i), lowBound = 0))
 
-    max_det = LpVariable(name='c1', lowBound=0)
-    max_ns = LpVariable(name='c2', lowBound=0)
+    max_det = LpVariable(name='maxdet', lowBound=0)
+    max_ns = LpVariable(name='maxns', lowBound=0)
 
     model += (sum([variable for variable in variables]) == 1)
 
@@ -19,15 +19,15 @@ def two_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
 
     for j, strategy in enumerate(ns_strats):
         if j == set_to_equality:
-            model += (max_det - sum([strategy[int('{0:03b}'.format(i)[0]*2 + '{0:03b}'.format(i)[1] + '{0:03b}'.format(i)[2], 2)] *
+            model += (max_ns - sum([strategy[int('{0:03b}'.format(i)[0]*2 + '{0:03b}'.format(i)[1] + '{0:03b}'.format(i)[2], 2)] *
                                      variables[int('{0:03b}'.format(i), 2)] for i in range(2**3)]) == 0)
         else:
-            model += (max_det - sum([strategy[int('{0:03b}'.format(i)[0]*2 + '{0:03b}'.format(i)[1] + '{0:03b}'.format(i)[2], 2)] *
+            model += (max_ns - sum([strategy[int('{0:03b}'.format(i)[0]*2 + '{0:03b}'.format(i)[1] + '{0:03b}'.format(i)[2], 2)] *
                                      variables[int('{0:03b}'.format(i), 2)] for i in range(2**3)]) >= 0)
 
     # This constraint makes sure that whenever deterministic strategies are strictly
     # better that non-deterministic strategies, the LP has no solution.
-    # (without this constraint, the solution could be negative).
+    # (without this constraint, the solution could be negative). (honestly might be unnecessary)
     model += (max_ns - max_det >= 0)
 
     obj_func = max_ns - max_det
@@ -35,6 +35,13 @@ def two_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
     #print(model)
 
     model.solve(PULP_CBC_CMD(msg=0))
+
+    """
+    print(f"status: {model.status}, {LpStatus[model.status]}")
+    print(f"objective: {model.objective.value()}")
+    for var in model.variables():
+        print(f"{var.name}: {var.value()}")
+    """
 
     return model.objective.value()
 
