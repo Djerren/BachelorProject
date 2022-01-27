@@ -20,6 +20,16 @@ def is_relevant_three_player(strategy):
 
     return False
 
+def is_relevant_two_player_x3(strategy):
+    for j in range(4):
+        value1 = Fraction(strategy[j])
+        value2 = Fraction(strategy[4*4 + j])
+        value3 = Fraction(strategy[8*4 + j])
+        if value1 > Fraction(1,3) or value2 > Fraction(1,3) or value3 > Fraction(1,3):
+            return True
+
+    return False
+
 def is_deterministic_three_player(strategy):
     """
     This function decides whether a strategy for the three player LSSD problem with binary inputs and outputs
@@ -85,6 +95,27 @@ def is_deterministic_two_player_binary(strategy):
 
     return True
 
+def is_deterministic_two_player_x3(strategy):
+    for x_a in range(3):
+        for a in range(2):
+            conditional_prob = Fraction()
+            for x_b in range(3):
+                conditional_prob += Fraction(strategy[(3*x_a + x_b) * 4 + (2*a)])
+
+            if conditional_prob != Fraction(0) and conditional_prob != Fraction(1):
+                return False
+
+    for x_b in range(3):
+        for b in range(2):
+            conditional_prob = Fraction()
+            for x_a in range(3):
+                conditional_prob += Fraction(strategy[(3*x_a + x_b) * 4 + b])
+
+            if conditional_prob != Fraction(0) and conditional_prob != Fraction(1):
+                return False
+
+    return True
+
 def write_to_file(strategy_list, file_name):
     """
     This function takes a list of strategies and writes them to a file.
@@ -129,7 +160,22 @@ def filter_two_player_binary():
     write_to_file(deterministic_strategies, "two_player_binary_det_strats.txt")
     write_to_file(relevant_ns_strategies, "two_player_binary_ns_strats.txt")
 
+def filter_two_player_x3():
+    deterministic_strategies = []
+    relevant_ns_strategies = []
+    with open("two_player_x3_vertices.txt") as strategies:
+        for i, line in enumerate(strategies):
+            if i >= 3 and line != "end":
+                line_split = line[3:len(line) - 1].split(" ")
+                if is_relevant_two_player_x3(line_split):
+                    if is_deterministic_two_player_x3(line_split):
+                        deterministic_strategies.append(line_split)
+                    else:
+                        relevant_ns_strategies.append(line_split)
+    write_to_file(deterministic_strategies, "two_player_x3_det_strats.txt")
+    write_to_file(relevant_ns_strategies, "two_player_x3_ns_strats.txt")
+
 
 
 if __name__ == "__main__":
-    filter_two_player_binary()
+    filter_two_player_x3()
