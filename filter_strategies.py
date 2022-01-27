@@ -62,6 +62,29 @@ def is_deterministic_three_player(strategy):
 
     return True
 
+def is_deterministic_two_player_binary(strategy):
+    for j in range(2**2):
+        target = '{0:02b}'.format(j)
+        conditional_prob = Fraction()
+        for k in range(2):
+            sum_variables = '{0:01b}'.format(k)
+            conditional_prob += Fraction(strategy[int(target[0] + sum_variables + target[1] + '0', 2)])
+
+        if conditional_prob != Fraction(0) and conditional_prob != Fraction(1):
+            return False
+
+    for j in range(2**2):
+        target = '{0:02b}'.format(j)
+        conditional_prob = Fraction()
+        for k in range(2):
+            sum_variables = '{0:01b}'.format(k)
+            conditional_prob += Fraction(strategy[int(sum_variables[0] + target[0] + '0' + target[1], 2)])
+
+        if conditional_prob != Fraction(0) and conditional_prob != Fraction(1):
+            return False
+
+    return True
+
 def write_to_file(strategy_list, file_name):
     """
     This function takes a list of strategies and writes them to a file.
@@ -92,7 +115,21 @@ def filter_three_players():
     write_to_file(deterministic_strategies, "three_player_relevant_det_strats.txt")
     write_to_file(relevant_ns_strategies, "three_player_relevant_ns_strats.txt")
 
+def filter_two_player_binary():
+    deterministic_strategies = []
+    relevant_ns_strategies = []
+    with open("two_player_vertices.txt") as strategies:
+        for i, line in enumerate(strategies):
+            if i >= 3 and line != "end":
+                line_split = line[3:len(line) - 1].split(" ")
+                if is_deterministic_two_player_binary(line_split):
+                    deterministic_strategies.append(line_split)
+                else:
+                    relevant_ns_strategies.append(line_split)
+    write_to_file(deterministic_strategies, "two_player_binary_det_strats.txt")
+    write_to_file(relevant_ns_strategies, "two_player_binary_ns_strats.txt")
+
 
 
 if __name__ == "__main__":
-    filter_three_players()
+    filter_two_player_binary()
