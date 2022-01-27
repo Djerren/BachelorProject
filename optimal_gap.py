@@ -38,6 +38,18 @@ def two_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
 
     return model.objective.value()
 
+def max_gap_two_player_binary():
+    det_strats = read_strategies_from_file("two_player_binary_det_strats.txt")
+    ns_strats = read_strategies_from_file("two_player_binary_ns_strats.txt")
+
+    max_gap = 0
+    for i in range(len(ns_strats)):
+        gap = two_player_binary_LP_pulp(det_strats, ns_strats, i)
+        if gap > max_gap:
+            max_gap = gap
+
+    return max_gap
+
 def read_strategies_from_file(file):
     strategies = []
     with open(file) as f:
@@ -48,9 +60,5 @@ def read_strategies_from_file(file):
     return strategies
 
 if __name__ == "__main__":
-    # for now we will work with floats, for pulp.
-    det_strats = read_strategies_from_file("two_player_binary_det_strats.txt")
-    ns_strats = read_strategies_from_file("two_player_binary_ns_strats.txt")
-    for i in range(len(ns_strats)):
-        print(two_player_binary_LP_pulp(det_strats, ns_strats, i))
+    print(max_gap_two_player_binary())
 
