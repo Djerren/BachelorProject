@@ -137,6 +137,66 @@ def two_players():
     with open('two_player_vertices.txt', 'w') as f:
         f.write(str(poly.get_generators()))
 
+def two_players_x3():
+    """
+    This function finds the vertices of the extreme points of the no-signalling polytope for three players each
+    with binary input but |X| = 3. It writes the results to a file. It works very similar to three_players(). ordering
+    of the variables becomes a bit more of a hassle.
+    """
+
+    # each variable q(x_a, x_b | a, b) is at place (3x_a + x_b) * 4 + (2a + b) + 1 in the list... so there are 9*4
+    # variables in the list and one more value for b of [b  -A].
+    positivity = []
+    for i in range(9*4):
+        rule = [0] * (9*4 + 1)
+        rule[i+1] = 1
+        positivity.append(rule.copy())
+
+    matrix = cdd.Matrix(positivity)
+
+    nosignalling_constraints = []
+    for x_b in range(3):
+        for b in range(2):
+            rule = [0]*(9*4 + 1)
+            rule[x_b       * 4 + b       + 1] = 1
+            rule[(3 + x_b) * 4 + b       + 1] = 1
+            rule[(6 + x_b) * 4 + b       + 1] = 1
+            rule[x_b       * 4 + (2 + b) + 1] = -1
+            rule[(3 + x_b) * 4 + (2 + b) + 1] = -1
+            rule[(6 + x_b) * 4 + (2 + b) + 1] = -1
+            nosignalling_constraints.append(rule.copy())
+
+    for x_a in range(3):
+        for a in range(2):
+            rule = [0]*(9*4 + 1)
+            rule[(3 * x_a)     * 4 + (2*a)     + 1] = 1
+            rule[(3 * x_a + 1) * 4 + (2*a)     + 1] = 1
+            rule[(3 * x_a + 2) * 4 + (2*a)     + 1] = 1
+            rule[(3 * x_a)     * 4 + (2*a + 1) + 1] = -1
+            rule[(3 * x_a + 1) * 4 + (2*a + 1) + 1] = -1
+            rule[(3 * x_a + 2) * 4 + (2*a + 1) + 1] = -1
+            nosignalling_constraints.append(rule.copy())
+
+    matrix.extend(nosignalling_constraints, linear = True)
+
+    distribution_constraints = []
+    for i in range(4):
+        rule = [0] * (9*4 + 1)
+        rule[0] = 1
+        for j in range(9):
+            rule[j*4 + i + 1] = -1
+        distribution_constraints.append(rule.copy())
+
+    matrix.extend(distribution_constraints, linear = True)
+
+    matrix.rep_type = cdd.RepType.INEQUALITY
+    matrix.canonicalize()
+    poly = cdd.Polyhedron(matrix)
+
+    with open('two_player_x3_vertices.txt', 'w') as f:
+        f.write(str(poly.get_generators()))
+
 if __name__ == "__main__":
     #two_players()
-    three_players()
+    #three_players()
+    two_players_x3()
