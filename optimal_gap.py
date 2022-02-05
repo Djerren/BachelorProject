@@ -101,16 +101,26 @@ def three_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
 def two_player_x3_LP_pulp(det_strats, ns_strats, set_to_equality, show=False):
     model = LpProblem(name="max_gap_2player_bin", sense=LpMaximize)
 
+    # the variables are named as follows: the variable corresponding to P(x,a,b)
+    # is named "xc" where c is the number between 0 and 3 corresponding to the bitstring ab.
     variables = []
     for x in range(3):
         for ab in range(4):
             variables.append(LpVariable(name=str(x)+str(ab), lowBound = 0))
 
+    # We have extra variables for the max win probability for deterministic and
+    # non-deterministic strategies.
     max_det = LpVariable(name='maxdet', lowBound=0)
     max_ns = LpVariable(name='maxns', lowBound=0)
 
+    # The sum of all variables (excluding max_det and max_ns) should be 1, such that
+    # it is a distribution.
     model += (sum([variable for variable in variables]) == 1)
 
+    # The winning probability of one strategy is given by
+    #     sum_{x,a,b} P(x,a,b) Q(x,x | a,b)
+    # This also means we only need to look at values of the strategy corresponding
+    # to Q(xx|ab) for some x,a,b (so where outputs are the same.)
     for strategy in det_strats:
         model += (max_det - sum([strategy[(16*x + ab)] * variables[4*x + ab]
                                  for x in range(3) for ab in range(4)]) >= 0)
