@@ -98,7 +98,7 @@ def three_player_binary_LP_pulp(det_strats, ns_strats, set_to_equality):
 
     return model.objective.value()
 
-def two_player_x3_LP_pulp(det_strats, ns_strats, set_to_equality):
+def two_player_x3_LP_pulp(det_strats, ns_strats, set_to_equality, show=False):
     model = LpProblem(name="max_gap_2player_bin", sense=LpMaximize)
 
     variables = []
@@ -141,6 +141,13 @@ def two_player_x3_LP_pulp(det_strats, ns_strats, set_to_equality):
         print(f"{var.name}: {var.value()}")
     """
     if model.status == 1:
+        if show and model.objective.value() > 0:
+            print(f"status: {model.status}, {LpStatus[model.status]}, gap: {model.objective.value()}")
+            print(f"objective: {model.objective.value()}")
+            for var in model.variables():
+                print(f"{var.name}: {var.value()},", end=" ")
+            print("\n")
+
         return model.objective.value()
     else:
         return 0
@@ -175,7 +182,7 @@ def max_gap_two_player_x3():
 
     max_gap = 0
     for i in range(len(ns_strats)):
-        gap = two_player_x3_LP_pulp(det_strats, ns_strats, i)
+        gap = two_player_x3_LP_pulp(det_strats, ns_strats, i, True)
         if gap > max_gap:
             max_gap = gap
 
@@ -191,5 +198,5 @@ def read_strategies_from_file(file):
     return strategies
 
 if __name__ == "__main__":
-    print(max_gap_two_player_x3())
+    print(f"\n largest gap found: {max_gap_two_player_x3()}")
 
